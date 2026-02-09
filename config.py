@@ -41,8 +41,8 @@ class Config:
     NOTIFICATION_TYPE = os.environ.get('NOTIFICATION_TYPE', 'email') #Options - " console / email "
     SMTP_HOST = os.environ.get('SMTP_HOST', 'smtp.gmail.com')
     SMTP_PORT = int(os.environ.get('SMTP_PORT', 587))
-    SMTP_USER = os.environ.get('SMTP_USER', 'rykerx066@gmail.com')
-    SMTP_PASS = os.environ.get('SMTP_PASS', 'ytgn mwre vmna lpyr')
+    SMTP_USER = os.environ.get('SMTP_USER', '')
+    SMTP_PASS = os.environ.get('SMTP_PASS', '')
 
 
 class DevelopmentConfig(Config):
@@ -67,3 +67,4 @@ config = {
     'testing': TestingConfig,
     'default': DevelopmentConfig
 }
+
