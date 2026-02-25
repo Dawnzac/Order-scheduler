@@ -7,8 +7,8 @@ def validate_email(email):
 
 
 def validate_password(password):
-    """Validate password (minimum 6 characters)"""
-    return password and len(password) >= 6
+    """Validate password (minimum 6 characters)."""
+    return isinstance(password, str) and len(password) >= 6
 
 
 def validate_scheduled_order(data):
