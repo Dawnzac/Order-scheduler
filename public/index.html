@@ -539,6 +539,7 @@
         let authToken = null;
         let currentUser = null;
         let itemPrices = {};
+        let refreshInterval = null; // stores ID from setInterval
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
@@ -630,6 +631,11 @@
             document.getElementById('auth-section').style.display = '';
             document.getElementById('app-section').style.display = 'none';
             showAlert('Logged out successfully', 'info');
+            // stop background refreshes
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
         }
 
         function showAppSection() {
@@ -644,7 +650,8 @@
             await loadLogs();
 
             // Auto-refresh every 10 seconds
-            setInterval(() => {
+            if (refreshInterval) clearInterval(refreshInterval);
+            refreshInterval = setInterval(() => {
                 loadOrders();
                 loadLogs();
             }, 10000);
@@ -728,6 +735,7 @@
         }
 
         async function loadOrders() {
+            if (!authToken) return; // nothing to do when logged out
             try {
                 const response = await fetch(`${API_URL}/orders`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
@@ -802,6 +810,7 @@
         }
 
         async function loadLogs() {
+            if (!authToken) return; // skip when logged out
             try {
                 const response = await fetch(`${API_URL}/logs`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
