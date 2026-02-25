@@ -38,7 +38,7 @@ class Config:
     )
     
     # Notification
-    NOTIFICATION_TYPE = os.environ.get('NOTIFICATION_TYPE', 'email') #Options - " console / email "
+    NOTIFICATION_TYPE = os.environ.get('NOTIFICATION_TYPE', 'console') #Options - " console / email "
     SMTP_HOST = os.environ.get('SMTP_HOST', 'smtp.gmail.com')
     SMTP_PORT = int(os.environ.get('SMTP_PORT', 587))
     SMTP_USER = os.environ.get('SMTP_USER', '')

@@ -15,7 +15,8 @@ class AuthService:
                 return None, "Invalid email format"
             
             if not validate_password(password):
-                return None, "Password must be at least 8 characters"
+                # validator requires minimum 6 chars
+                return None, "Password must be at least 6 characters"
 
             existing_user = User.query.filter_by(email=email).first()
             if existing_user:
