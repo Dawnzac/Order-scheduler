@@ -3,3 +3,4 @@
 venv
 celerybeat*
 instance
+.env

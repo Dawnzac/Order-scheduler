@@ -35,6 +35,7 @@ def create_app(config_name=None):
     
     # Create Celery app first
     create_celery_app(app)
+    init_celery(app)
     
     # Register blueprints
     register_blueprints(app)
@@ -61,7 +62,6 @@ def init_celery(app):
                 return self.run(*args, **kwargs)
     
     celery_app.Task = ContextTask
-    celery_app.conf.update(app.config)
     
     logger.info('📦 Celery initialized')
 

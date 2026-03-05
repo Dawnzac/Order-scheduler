@@ -3,14 +3,13 @@ Flask application entry point
 """
 
 import os
-from app import create_app, create_celery_app
+from app import create_app, celery_app
 from utils.logger import log_info
 
 app = create_app(os.environ.get('FLASK_ENV', 'development'))
 
-celery = create_celery_app(app)
+celery = celery_app
 
-import tasks
 
 if __name__ == '__main__':
     log_info("Starting Order Scheduler Server")
