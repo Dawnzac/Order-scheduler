@@ -331,6 +331,38 @@
             border: none;
         }
 
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: normal;
+        }
+
+        .day-pattern-section {
+            display: none;
+        }
+
+        .day-pattern-section.active {
+            display: block;
+        }
+
         @keyframes slideIn {
             from {
                 opacity: 0;
@@ -442,13 +474,55 @@
                         </div>
                         <div class="form-group">
                             <label for="recurrenceType">Recurrence:</label>
-                            <select id="recurrenceType">
+                            <select id="recurrenceType" onchange="updateRecurrencePattern()">
                                 <option value="">None (One-time)</option>
                                 <option value="minutely">Minutely</option>
                                 <option value="daily">Daily</option>
                                 <option value="weekly">Weekly</option>
                                 <option value="monthly">Monthly</option>
                             </select>
+                        </div>
+
+                        <!-- Weekly Pattern Selection -->
+                        <div id="weeklyPatternSection" class="day-pattern-section form-group">
+                            <label>Select Days (Weekly):</label>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="day_0" name="weekday" value="0">
+                                    <label for="day_0">Sunday</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="day_1" name="weekday" value="1">
+                                    <label for="day_1">Monday</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="day_2" name="weekday" value="2">
+                                    <label for="day_2">Tuesday</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="day_3" name="weekday" value="3">
+                                    <label for="day_3">Wednesday</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="day_4" name="weekday" value="4">
+                                    <label for="day_4">Thursday</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="day_5" name="weekday" value="5">
+                                    <label for="day_5">Friday</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="day_6" name="weekday" value="6">
+                                    <label for="day_6">Saturday</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Monthly Pattern Selection -->
+                        <div id="monthlyPatternSection" class="day-pattern-section form-group">
+                            <label>Select Days of Month (1-31):</label>
+                            <div id="monthlyDaysContainer" class="checkbox-group">
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="recurrenceEnd">Recurrence End Date (optional):</label>
@@ -508,13 +582,55 @@
                 </div>
                 <div class="form-group">
                     <label for="editRecurrenceType">Recurrence:</label>
-                    <select id="editRecurrenceType">
+                    <select id="editRecurrenceType" onchange="updateEditRecurrencePattern()">
                         <option value="">None (One-time)</option>
                         <option value="minutely">Minutely</option>
                         <option value="daily">Daily</option>
                         <option value="weekly">Weekly</option>
                         <option value="monthly">Monthly</option>
                     </select>
+                </div>
+
+                <!-- Weekly Pattern Selection in Edit Modal -->
+                <div id="editWeeklyPatternSection" class="day-pattern-section form-group">
+                    <label>Select Days (Weekly):</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="editDay_0" name="editWeekday" value="0">
+                            <label for="editDay_0">Sunday</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="editDay_1" name="editWeekday" value="1">
+                            <label for="editDay_1">Monday</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="editDay_2" name="editWeekday" value="2">
+                            <label for="editDay_2">Tuesday</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="editDay_3" name="editWeekday" value="3">
+                            <label for="editDay_3">Wednesday</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="editDay_4" name="editWeekday" value="4">
+                            <label for="editDay_4">Thursday</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="editDay_5" name="editWeekday" value="5">
+                            <label for="editDay_5">Friday</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="editDay_6" name="editWeekday" value="6">
+                            <label for="editDay_6">Saturday</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monthly Pattern Selection in Edit Modal -->
+                <div id="editMonthlyPatternSection" class="day-pattern-section form-group">
+                    <label>Select Days of Month (1-31):</label>
+                    <div id="editMonthlyDaysContainer" class="checkbox-group">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="editRecurrenceEnd">Recurrence End (optional):</label>
@@ -593,6 +709,10 @@
             const now = new Date();
             now.setMinutes(now.getMinutes() + 1);
             document.getElementById('scheduledTime').min = now.toISOString().slice(0, 16);
+
+            // Generate monthly days checkboxes
+            generateMonthlyDaysCheckboxes('monthlyDaysContainer');
+            generateMonthlyDaysCheckboxes('editMonthlyDaysContainer');
         });
 
         function switchTab(tabName) {
@@ -600,6 +720,100 @@
             document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
             document.getElementById(tabName).classList.add('active');
             document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+        }
+
+        // Generate monthly day checkboxes dynamically
+        function generateMonthlyDaysCheckboxes(containerId) {
+            const container = document.getElementById(containerId);
+            let html = '';
+            for (let day = 1; day <= 31; day++) {
+                const checkId = containerId.includes('edit') ? `editMday_${day}` : `mday_${day}`;
+                const nameAttr = containerId.includes('edit') ? 'editMonthday' : 'monthday';
+                html += `<div class="checkbox-item">
+                    <input type="checkbox" id="${checkId}" name="${nameAttr}" value="${day}">
+                    <label for="${checkId}">${day}</label>
+                </div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        // Update visibility of recurrence pattern sections
+        function updateRecurrencePattern() {
+            const recurrenceType = document.getElementById('recurrenceType').value;
+            document.getElementById('weeklyPatternSection').classList.toggle('active', recurrenceType === 'weekly');
+            document.getElementById('monthlyPatternSection').classList.toggle('active', recurrenceType === 'monthly');
+        }
+
+        // Update visibility of recurrence pattern sections in edit modal
+        function updateEditRecurrencePattern() {
+            const recurrenceType = document.getElementById('editRecurrenceType').value;
+            document.getElementById('editWeeklyPatternSection').classList.toggle('active', recurrenceType === 'weekly');
+            document.getElementById('editMonthlyPatternSection').classList.toggle('active', recurrenceType === 'monthly');
+        }
+
+        // Get selected pattern based on recurrence type
+        function getSelectedPattern() {
+            const recurrenceType = document.getElementById('recurrenceType').value;
+            
+            if (recurrenceType === 'weekly') {
+                const selected = Array.from(document.querySelectorAll('input[name="weekday"]:checked'))
+                    .map(el => parseInt(el.value));
+                return selected.length > 0 ? { type: 'weekly', days: selected } : null;
+            } else if (recurrenceType === 'monthly') {
+                const selected = Array.from(document.querySelectorAll('input[name="monthday"]:checked'))
+                    .map(el => parseInt(el.value));
+                return selected.length > 0 ? { type: 'monthly', days: selected } : null;
+            }
+            return null;
+        }
+
+        // Get selected pattern from edit modal
+        function getEditSelectedPattern() {
+            const recurrenceType = document.getElementById('editRecurrenceType').value;
+            
+            if (recurrenceType === 'weekly') {
+                const selected = Array.from(document.querySelectorAll('input[name="editWeekday"]:checked'))
+                    .map(el => parseInt(el.value));
+                return selected.length > 0 ? { type: 'weekly', days: selected } : null;
+            } else if (recurrenceType === 'monthly') {
+                const selected = Array.from(document.querySelectorAll('input[name="editMonthday"]:checked'))
+                    .map(el => parseInt(el.value));
+                return selected.length > 0 ? { type: 'monthly', days: selected } : null;
+            }
+            return null;
+        }
+
+        // Set pattern checkboxes from data when editing
+        function setPatternFromData(pattern) {
+            if (!pattern) return;
+            
+            if (pattern.type === 'weekly') {
+                pattern.days.forEach(day => {
+                    const checkbox = document.getElementById(`editDay_${day}`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            } else if (pattern.type === 'monthly') {
+                pattern.days.forEach(day => {
+                    const checkbox = document.getElementById(`editMday_${day}`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            }
+        }
+
+        // Format pattern for display
+        function formatPattern(pattern) {
+            if (!pattern) return '';
+            
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            
+            if (pattern.type === 'weekly') {
+                const days = pattern.days.map(d => dayNames[d]).join(', ');
+                return `Specific days: ${days}`;
+            } else if (pattern.type === 'monthly') {
+                const days = pattern.days.join(', ');
+                return `Days of month: ${days}`;
+            }
+            return '';
         }
 
         async function handleLogin(e) {
@@ -737,6 +951,7 @@
             const recurrenceType = document.getElementById('recurrenceType').value || null;
             const recurrenceEndInput = document.getElementById('recurrenceEnd').value;
             const recurrenceEnd = recurrenceEndInput ? new Date(recurrenceEndInput).toISOString() : null;
+            const recurrencePattern = getSelectedPattern();
 
             try {
                 const response = await apiCall(`${API_URL}/orders`, {
@@ -750,7 +965,8 @@
                         quantity,
                         scheduledTime,
                         recurrenceType,
-                        recurrenceEnd
+                        recurrenceEnd,
+                        recurrencePattern
                     })
                 });
 
@@ -763,6 +979,9 @@
                     document.getElementById('scheduledTime').value = '';
                     document.getElementById('recurrenceType').value = '';
                     document.getElementById('recurrenceEnd').value = '';
+                    document.querySelectorAll('input[name="weekday"]').forEach(el => el.checked = false);
+                    document.querySelectorAll('input[name="monthday"]').forEach(el => el.checked = false);
+                    updateRecurrencePattern();
                     updateItemPrice();
                     await loadOrders();
                 } else {
@@ -805,6 +1024,7 @@
                             <p>Quantity: ${order.quantity}</p>
                             <p>Scheduled: ${formatDate(order.scheduledTime)}</p>
                             ${order.recurrenceType ? `<p>Recurrence: ${order.recurrenceType}</p>` : ''}
+                            ${order.recurrencePattern ? `<p>${formatPattern(order.recurrencePattern)}</p>` : ''}
                             ${order.recurrenceEnd ? `<p>Ends: ${formatDate(order.recurrenceEnd)}</p>` : ''}
                         </div>
                         <div class="order-actions">
@@ -951,6 +1171,18 @@
             document.getElementById('editRecurrenceEnd').value = toLocalISOString(order.recurrenceEnd);
             document.getElementById('editStatus').value = order.status.toLowerCase();
 
+            // Clear all checkboxes
+            document.querySelectorAll('input[name="editWeekday"]').forEach(el => el.checked = false);
+            document.querySelectorAll('input[name="editMonthday"]').forEach(el => el.checked = false);
+
+            // Set pattern checkboxes if pattern exists
+            if (order.recurrencePattern) {
+                setPatternFromData(order.recurrencePattern);
+            }
+
+            // Show/hide pattern sections based on recurrence type
+            updateEditRecurrencePattern();
+
             document.getElementById('editOrderModal').classList.add('show');
         }
 
@@ -972,6 +1204,7 @@
             const recurrenceEnd = recurrenceEndInput ? new Date(recurrenceEndInput).toISOString() : null;
 
             const status = document.getElementById('editStatus').value;
+            const recurrencePattern = getEditSelectedPattern();
 
             try {
                 const response = await apiCall(`${API_URL}/orders/${orderId}`, {
@@ -985,7 +1218,8 @@
                         scheduledTime,
                         recurrenceType,
                         recurrenceEnd,
-                        status
+                        status,
+                        recurrencePattern
                     })
                 });
 

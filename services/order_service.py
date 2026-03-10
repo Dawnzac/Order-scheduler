@@ -10,7 +10,7 @@ class OrderService:
     """Service for managing scheduled orders"""
     
     @staticmethod
-    def create_order(user_id, item_id, quantity, scheduled_time, recurrence_type=None, recurrence_end=None):
+    def create_order(user_id, item_id, quantity, scheduled_time, recurrence_type=None, recurrence_end=None, recurrence_pattern=None):
         """Create a new scheduled order"""
         try:
             # Validate input
@@ -65,6 +65,7 @@ class OrderService:
                 quantity=quantity,
                 scheduled_time=scheduled_dt,
                 recurrence_type=recurrence_type or RecurrenceType.ONCE.value,
+                recurrence_pattern=recurrence_pattern,
                 recurrence_end=recurrence_end_dt,
                 status=OrderStatus.PENDING.value
             )
@@ -133,6 +134,10 @@ class OrderService:
             if 'recurrenceType' in update_data or 'recurrence_type' in update_data:
                 order.recurrence_type = update_data.get('recurrenceType') or update_data.get('recurrence_type')
             
+            # Handle recurrencePattern
+            if 'recurrencePattern' in update_data or 'recurrence_pattern' in update_data:
+                order.recurrence_pattern = update_data.get('recurrencePattern') or update_data.get('recurrence_pattern')
+            
             # Handle recurrenceEnd
             recurrence_end = update_data.get('recurrenceEnd') or update_data.get('recurrence_end')
             if recurrence_end:
@@ -182,9 +187,30 @@ class OrderService:
     def execute_order(order_id):
         """Execute an order and create log entry"""
         try:
+            from utils.helpers import calculate_next_execution_time, is_within_recurrence_window, should_execute_order
+            
             order = ScheduledOrder.query.get(order_id)
             if not order:
                 return None, "Order not found"
+            
+            # Check if this order should execute today based on pattern
+            if not should_execute_order(order):
+                log_info(f"Order {order_id} skipped - not scheduled for today")
+                
+                # Still need to schedule next execution
+                if order.recurrence_type and order.recurrence_type != RecurrenceType.ONCE.value:
+                    next_time = calculate_next_execution_time(
+                        order.scheduled_time, 
+                        order.recurrence_type,
+                        order.recurrence_pattern
+                    )
+                    if is_within_recurrence_window(next_time, order.recurrence_end):
+                        order.scheduled_time = next_time
+                    else:
+                        order.status = OrderStatus.COMPLETED.value
+                        db.session.commit()
+                
+                return None, "Order not scheduled for today"
             
             # Get item details
             item = next((i for i in MOCK_ITEMS if i['id'] == order.item_id), None)
@@ -212,7 +238,11 @@ class OrderService:
             
             # Schedule next execution if recurring
             if order.recurrence_type and order.recurrence_type != RecurrenceType.ONCE.value:
-                next_time = calculate_next_execution_time(order.scheduled_time, order.recurrence_type)
+                next_time = calculate_next_execution_time(
+                    order.scheduled_time, 
+                    order.recurrence_type,
+                    order.recurrence_pattern
+                )
                 if is_within_recurrence_window(next_time, order.recurrence_end):
                     order.scheduled_time = next_time
                     order.status = OrderStatus.PENDING.value  # Reset to PENDING for next run

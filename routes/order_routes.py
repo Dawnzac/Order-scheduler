@@ -28,6 +28,7 @@ def get_orders():
                 'quantity': order.quantity,
                 'scheduledTime': format_execution_time(order.scheduled_time),
                 'recurrenceType': order.recurrence_type,
+                'recurrencePattern': order.recurrence_pattern,
                 'recurrenceEnd': format_execution_time(order.recurrence_end) if order.recurrence_end else None,
                 'status': order.status
             })
@@ -56,7 +57,8 @@ def create_order():
             quantity=data['quantity'],
             scheduled_time=data['scheduledTime'],
             recurrence_type=data.get('recurrenceType'),
-            recurrence_end=data.get('recurrenceEnd')
+            recurrence_end=data.get('recurrenceEnd'),
+            recurrence_pattern=data.get('recurrencePattern')
         )
         
         if error:
@@ -102,6 +104,7 @@ def get_order(order_id):
                 'quantity': order.quantity,
                 'scheduledTime': format_execution_time(order.scheduled_time),
                 'recurrenceType': order.recurrence_type,
+                'recurrencePattern': order.recurrence_pattern,
                 'recurrenceEnd': format_execution_time(order.recurrence_end) if order.recurrence_end else None,
                 'status': order.status,
                 'createdAt': format_execution_time(order.created_at)

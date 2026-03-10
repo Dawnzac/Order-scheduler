@@ -54,6 +54,7 @@ class ScheduledOrder(db.Model):
     quantity = db.Column(db.Integer, nullable=False, default=1)
     scheduled_time = db.Column(db.DateTime, nullable=False)
     recurrence_type = db.Column(db.String(20), default=RecurrenceType.ONCE.value)
+    recurrence_pattern = db.Column(db.JSON, nullable=True)  # Stores selected days for weekly/monthly
     recurrence_end = db.Column(db.DateTime, nullable=True)
     status = db.Column(db.String(20), default=OrderStatus.PENDING.value)
     task_id = db.Column(db.String(255), nullable=True)  # Celery task ID
@@ -73,6 +74,7 @@ class ScheduledOrder(db.Model):
             'quantity': self.quantity,
             'scheduled_time': self.scheduled_time.isoformat(),
             'recurrence_type': self.recurrence_type,
+            'recurrence_pattern': self.recurrence_pattern,
             'recurrence_end': self.recurrence_end.isoformat() if self.recurrence_end else None,
             'status': self.status,
             'task_id': self.task_id,
