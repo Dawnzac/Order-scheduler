@@ -541,6 +541,45 @@
         let itemPrices = {};
         let refreshInterval = null; // stores ID from setInterval
 
+        // Wrapper function for API calls with token expiration handling
+        async function apiCall(url, options = {}) {
+            try {
+                const response = await fetch(url, options);
+                
+                // Handle token expiration (401 Unauthorized)
+                if (response.status === 401) {
+                    handleTokenExpired();
+                }
+                
+                return response;
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        // Handle token expiration - clear session and redirect to login
+        function handleTokenExpired() {
+            authToken = null;
+            currentUser = null;
+            localStorage.removeItem('authToken');
+            
+            // Stop auto-refresh
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+            
+            // Show UI
+            document.getElementById('auth-section').style.display = '';
+            document.getElementById('app-section').style.display = 'none';
+            
+            // Show alert to user
+            showAlert('Your session has expired. Please log in again.', 'error');
+            
+            // Switch to login tab
+            switchTab('login');
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('authToken');
@@ -569,7 +608,7 @@
             const password = document.getElementById('loginPassword').value;
 
             try {
-                const response = await fetch(`${API_URL}/auth/login`, {
+                const response = await apiCall(`${API_URL}/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -602,7 +641,7 @@
             const password = document.getElementById('registerPassword').value;
 
             try {
-                const response = await fetch(`${API_URL}/auth/register`, {
+                const response = await apiCall(`${API_URL}/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password })
@@ -659,7 +698,7 @@
 
         async function loadItems() {
             try {
-                const response = await fetch(`${API_URL}/orders/items`, {
+                const response = await apiCall(`${API_URL}/orders/items`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
 
@@ -700,7 +739,7 @@
             const recurrenceEnd = recurrenceEndInput ? new Date(recurrenceEndInput).toISOString() : null;
 
             try {
-                const response = await fetch(`${API_URL}/orders`, {
+                const response = await apiCall(`${API_URL}/orders`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -737,7 +776,7 @@
         async function loadOrders() {
             if (!authToken) return; // nothing to do when logged out
             try {
-                const response = await fetch(`${API_URL}/orders`, {
+                const response = await apiCall(`${API_URL}/orders`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
 
@@ -785,7 +824,7 @@
             try {
                 console.log('Deleting order:', orderId, 'Token:', authToken ? 'present' : 'missing');
 
-                const response = await fetch(`${API_URL}/orders/${orderId}`, {
+                const response = await apiCall(`${API_URL}/orders/${orderId}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${authToken}`,
@@ -812,7 +851,7 @@
         async function loadLogs() {
             if (!authToken) return; // skip when logged out
             try {
-                const response = await fetch(`${API_URL}/logs`, {
+                const response = await apiCall(`${API_URL}/logs`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
 
@@ -869,7 +908,7 @@
 
         async function loadUserProfile() {
             try {
-                const response = await fetch(`${API_URL}/auth/profile`, {
+                const response = await apiCall(`${API_URL}/auth/profile`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
                 if (response.ok) {
@@ -935,7 +974,7 @@
             const status = document.getElementById('editStatus').value;
 
             try {
-                const response = await fetch(`${API_URL}/orders/${orderId}`, {
+                const response = await apiCall(`${API_URL}/orders/${orderId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
